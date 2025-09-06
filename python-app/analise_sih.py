@@ -2,14 +2,14 @@
 
 import pandas as pd
 from pysus import SIH
-from datasus import read_dbc # <-- MUDANÇA FINAL: Usando a biblioteca 'read-dbc'
+from pathlib import Path
 
 # --- Documentação do Script ---
 # Objetivo: Analisar dados de internações (SIH) de São Paulo em 2024
 # para identificar casos de Obesidade (CID-10 E66).
 # Abordagem:
-# - Download: pysus.SIH
-# - Leitura do arquivo .DBC: biblioteca 'read-dbc'
+# - Download: pysus.SIH (lógica do usuário, mantida).
+# - Leitura do arquivo .parquet: pandas.read_parquet.
 # -----------------------------
 
 def analisar_internacoes_obesidade(estado, ano, mes):
@@ -20,7 +20,7 @@ def analisar_internacoes_obesidade(estado, ano, mes):
     print(f"--- Iniciando análise para {estado}/{ano}, Mês: {mes} ---")
 
     try:
-        # 1. BAIXAR OS DADOS (usando pysus)
+        # --- PARTE 1 (INTOCADA, CONFORME SOLICITADO) ---
         print("Passo 1/3: Baixando arquivo de dados...")
         sih = SIH().load()
         sih_files = sih.get_files(group="RD", uf=estado, year=ano, month=[mes])
@@ -28,22 +28,27 @@ def analisar_internacoes_obesidade(estado, ano, mes):
             print("Nenhum arquivo encontrado para o período especificado.")
             return None
         sih.describe(sih_files[0])
-        dbc_filepath = sih.download(sih_files)
-        print(dbc_filepath)
+        parquet_set = sih.download(sih_files)
         
-        if not dbc_filepath:
+        if not parquet_set:
             print("Download falhou. Verifique se os dados para este período existem.")
             return None
         
-        print(f"Download completo! Arquivo salvo em: {dbc_filepath}")
+        print(f"Download completo! Arquivo salvo em: {parquet_set}")
 
-        # 2. LER O ARQUIVO .DBC (usando read-dbc)
-        # Esta é a abordagem mais direta, com uma biblioteca especialista em ler .DBC
+        # --- PARTE 2 (CORRIGIDA) ---
         print("Passo 2/3: Lendo e convertendo o arquivo para DataFrame...")
-        df = pd.DataFrame(read_dbc(dbc_filepath))
+
+        # CORREÇÃO 1: Extrair o caminho do arquivo da lista retornada pela função download.
+        # A variável parquet_set contém uma lista, ex: ['caminho/arquivo.parquet']. 
+        # Nós pegamos o primeiro item [0] para ter o caminho como texto.
+        print("Caminho do arquivo baixado:", parquet_set)
+        
+        print("Lendo o arquivo .parquet...")
+        df = parquet_set.to_dataframe()
         print("Leitura concluída. Total de registros no mês:", len(df))
         
-        # 3. FILTRAR OS DADOS E APRESENTAR
+        # --- PARTE 3 (INTOCADA) ---
         cid_obesidade = 'E66'
         print(f"Passo 3/3: Filtrando internações por CID principal = '{cid_obesidade}' (Obesidade)...")
         casos_obesidade = df[df['DIAG_PRINC'].str.startswith(cid_obesidade, na=False)]
@@ -65,7 +70,7 @@ def analisar_internacoes_obesidade(estado, ano, mes):
         print(f"Ocorreu um erro durante a análise: {e}")
         return None
 
-# --- Execução Principal ---
+# --- Execução Principal (INTOCADA) ---
 if __name__ == "__main__":
     estado_alvo = 'SP'
     ano_alvo = 2024
