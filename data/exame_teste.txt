@@ -1,0 +1,6 @@
+Sexo biológico: Masculino
+Idade: 45
+Altura: 178cm
+Peso: 100kg
+TGO: 35 U/L
+TGP: 55 U/L
